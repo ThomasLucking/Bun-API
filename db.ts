@@ -17,7 +17,14 @@ const sql = `create table if not exists todos (
 db.run(sql);
 
 
+export type TodoPayload = {
+  title: string;
+  content: string;
+  due_date: string;
+  done: boolean;
 
+
+}
 
 export const queryTodos = () => db.query('select * from todos').all();
 
@@ -27,7 +34,7 @@ export const insertStmt = db.prepare(`
   RETURNING *
 `);
 
-export const insertTodo = (todo: { title: string, content: string, due_date: string, done: boolean }) => {
+export const insertTodo = (todo: TodoPayload) => {
   return insertStmt.get({
     $title: todo.title,
     $content: todo.content,
