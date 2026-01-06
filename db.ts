@@ -21,6 +21,9 @@ const insertTodo = db.prepare(`
   values ($title, $content, $due_date)
 `);
 
+
+export const queryTodos = () => db.query('select * from todos').all();
+
 insertTodo.run({
   $title: "Created Database",
   $content: "Test",
