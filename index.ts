@@ -1,13 +1,8 @@
 import index from './index.html';
 import { queryTodos, insertTodo } from './db.ts';
 import * as v from 'valibot';
+import { TodosSchema } from './Schema.ts'
 
-const TodosSchema = v.object({
-  title: v.pipe(v.string(), v.nonEmpty("Title cannot be empty")),
-  content: v.string(),
-  due_date: v.string(),
-  done: v.boolean()
-});
 const server = Bun.serve({
   port: 3000,
   routes: {
@@ -20,7 +15,6 @@ const server = Bun.serve({
       POST: async (req) => {
         try {
           const body = await req.json();
-
 
           const validate = v.parse(TodosSchema, body);
           const newTodo = insertTodo(validate);

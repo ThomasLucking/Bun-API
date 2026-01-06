@@ -1,4 +1,5 @@
 import { Database } from 'bun:sqlite';
+import type { Todo } from './Schema';
 
 
 const db = new Database("mydb.sqlite", { create: true });
@@ -17,15 +18,6 @@ const sql = `create table if not exists todos (
 db.run(sql);
 
 
-export type TodoPayload = {
-  title: string;
-  content: string;
-  due_date: string;
-  done: boolean;
-
-
-}
-
 export const queryTodos = () => db.query('select * from todos').all();
 
 export const insertStmt = db.prepare(`
@@ -34,7 +26,7 @@ export const insertStmt = db.prepare(`
   RETURNING *
 `);
 
-export const insertTodo = (todo: TodoPayload) => {
+export const insertTodo = (todo: Todo) => {
   return insertStmt.get({
     $title: todo.title,
     $content: todo.content,
