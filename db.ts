@@ -4,9 +4,11 @@ import { Database } from 'bun:sqlite';
 const db = new Database("mydb.sqlite", { create: true });
 
 
+
+
 const sql = `create table if not exists todos (
     id integer primary key autoincrement,
-    title text not null,
+    title text not null check(length(title) <= 250),
     content text not null,
     due_date text,
     done boolean not null default 0
