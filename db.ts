@@ -22,7 +22,7 @@ const insertTodo = db.prepare(`
 `);
 
 
-export const reqGET = () => db.query('select * from todos').all();
+export const queryTodos = () => db.query('select * from todos').all();
 
 insertTodo.run({
   $title: "Created Database",
