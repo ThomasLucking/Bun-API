@@ -1,8 +1,11 @@
 {
-  "name": "bun-api",
+  "name": "quickstart",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "start": "bun run index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
