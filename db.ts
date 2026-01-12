@@ -32,7 +32,6 @@ export const modifyTodo = (id: number, updates: Partial<Todo>) => {
 
   const setClause = keys.map((key) => `${key} = ?`).join(", ");
   
-  
   const values = keys.map((key) => {
     const value = updates[key];
     if (typeof value === "boolean") return value ? 1 : 0;
@@ -48,6 +47,16 @@ export const modifyTodo = (id: number, updates: Partial<Todo>) => {
 };
 
 
+
+
+export const findTodoById = (id: number) => 
+  db.prepare("SELECT * FROM todos WHERE id = ?").get(id);
+
+export const deleteTodoById = (id: number) => {
+  const stmt = db.prepare("DELETE FROM todos WHERE id = ?");
+  return stmt.run(id);
+}
+
 export const insertTodo = (todo: Todo) => {
   return insertStmt.get({
     $title: todo.title,
@@ -56,8 +65,6 @@ export const insertTodo = (todo: Todo) => {
     $done: todo.done ? 1 : 0
   });
 };
-
-
 
 
 const allTodos = db.query("select * from todos").all();
