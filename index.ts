@@ -1,7 +1,9 @@
 import index from './index.html';
-import { queryTodos, insertTodo } from './db.ts';
+import { queryTodos, insertTodo, modifyTodo } from './db.ts';
 import * as v from 'valibot';
-import { TodosSchema } from './Schema.ts'
+import { ValiError } from 'valibot';
+import { TodosSchema, OptionalTodoSchema } from './Schema.ts'
+import type { Todo } from './Schema.ts'
 
 const server = Bun.serve({
   port: 3000,
@@ -27,13 +29,41 @@ const server = Bun.serve({
           console.error("Error inserting todo:", err);
           return Response.json({ success: false, error: "Internal Server Error" }, { status: 500 });
         }
+      },
+    },
+    "/api/todos/:id": {
+      PATCH: async (req) => {
+        try {
+          const id = Number(req.params.id);
+          
+          const body = await req.json();
+          
+         const validatedData = v.parse(OptionalTodoSchema, body);
+          if (Object.keys(validatedData).length === 0) {
+            return Response.json({ error: "No valid fields provided for update" }, { status: 400 });
+          }
+          const updatedTodo = modifyTodo(id, validatedData);
+          if (!updatedTodo) {
+            return Response.json({ success: false, message: "Todo not found" }, { status: 404 });
+          }
+          return Response.json({ success: true, data: updatedTodo }, {status: 200});
+
+        } catch (error: any) {
+          console.error("PATCH ERROR:", error);
+
+          if (error instanceof ValiError) {
+            return Response.json({
+              success: false,
+              error: "Validation Error",
+              issues: error.issues
+            }, { status: 400 }); 
+          }
+          return Response.json({ error: error.message || "Server Error" }, { status: 500 });
+        }
       }
     }
   },
 
-  fetch() {
-    return Response.json({ error: "Not found" }, { status: 404 });
-  }
 });
 
 console.log(`Listening on ${server.url}`);
