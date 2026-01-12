@@ -1,5 +1,5 @@
 import index from './index.html';
-import { queryTodos, insertTodo, modifyTodo } from './db.ts';
+import { queryTodos, insertTodo, modifyTodo, findTodoById, deleteTodoById } from './db.ts';
 import * as v from 'valibot';
 import { ValiError } from 'valibot';
 import { TodosSchema, OptionalTodoSchema } from './Schema.ts'
@@ -64,10 +64,7 @@ const server = Bun.serve({
       DELETE: async (req) => {
         try {
           const id = Number(req.params.id);
-
-          const checkStmt = db.prepare("SELECT * FROM todos WHERE id = ?");
-          const existing = checkStmt.get(id);
-
+          const existing = findTodoById(id)
           if (!existing) {
             return Response.json(
               { success: false, message: "Todo not found" },
@@ -75,15 +72,13 @@ const server = Bun.serve({
             );
           }
 
-          const stmt = db.prepare("DELETE FROM todos WHERE id = ?");
-          stmt.run(id);
-
+          deleteTodoById(id)
           return Response.json(
             { success: true, message: "Todo deleted successfully" },
             { status: 200 }
           );
         } catch (err: any) {
-          console.error("Something happened", err);
+          console.error("Error deleting todo:", err);
           return Response.json({ error: err.message || "Server Error" }, { status: 500 });
         }
       }
