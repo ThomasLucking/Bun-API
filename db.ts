@@ -32,7 +32,6 @@ export const modifyTodo = (id: number, updates: Partial<Todo>) => {
 
   const setClause = keys.map((key) => `${key} = ?`).join(", ");
   
-  
   const values = keys.map((key) => {
     const value = updates[key];
     if (typeof value === "boolean") return value ? 1 : 0;
@@ -56,8 +55,6 @@ export const insertTodo = (todo: Todo) => {
     $done: todo.done ? 1 : 0
   });
 };
-
-
 
 
 const allTodos = db.query("select * from todos").all();
