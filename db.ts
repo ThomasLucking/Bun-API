@@ -23,7 +23,6 @@ export const insertStmt = db.prepare(`
   returning *
 `);
 
-
 export const modifyTodo = (id: number, updates: Partial<Todo>) => {
   const keys = Object.keys(updates) as Array<keyof typeof updates>;
 
@@ -33,13 +32,14 @@ export const modifyTodo = (id: number, updates: Partial<Todo>) => {
 
   const setClause = keys.map((key) => `${key} = ?`).join(", ");
   
-  const sql = `UPDATE todos SET ${setClause} WHERE id = ? RETURNING *`;
-
+  
   const values = keys.map((key) => {
     const value = updates[key];
     if (typeof value === "boolean") return value ? 1 : 0;
     return value ?? null;    
   });
+  
+  const sql = `UPDATE todos SET ${setClause} WHERE id = ? RETURNING *`;
 
   const stmt = db.prepare(sql);
   const updatedTodo = stmt.get(...values as any[], id);
