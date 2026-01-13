@@ -1,5 +1,5 @@
 import { Database, } from 'bun:sqlite';
-import type { Todo } from './Schema';
+import type { Todo } from '../schemas/Schema';
 
 export const db = new Database("mydb.sqlite", { create: true });
 type SQLiteValue = string | number | bigint | Uint8Array | boolean | null;
