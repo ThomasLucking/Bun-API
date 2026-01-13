@@ -1,14 +1,11 @@
 import { queryTodos, insertTodo, modifyTodo, deleteTodoById, db } from '../db/db';
 import { TodosSchema, OptionalTodoSchema } from '../schemas/Schema';
 import * as v from 'valibot';
-import { jsonResponse } from '../utils/utils'; // Single source of truth
+import { jsonResponse } from '../utils/utils'; 
 
 export const getRoute = () => {
     try {
         const data = queryTodos();
-        if (!data || data.length === 0) {
-            return jsonResponse({ success: false, error: "No todos found" }, { status: 404 });
-        }
         return jsonResponse(data);
     } catch (err) {
         return jsonResponse({ success: false, error: "Internal Server Error" }, { status: 500 });

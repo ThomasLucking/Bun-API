@@ -15,29 +15,29 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Prefer, Origin",
 };
 
-const jsonResponse = (data: any, options: ResponseInit = {}) => {
-  return new Response(JSON.stringify(data), {
-    ...options,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-};
+const handleOptions = () => new Response(null, { headers: corsHeaders });
+
 
 
 const server = Bun.serve({
   port: 3000,
   routes: {
-    "/": index,
+    "/": new Response(String(index), {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/html"
+      }
+    }),
+    
     "/api/todos": {
+      OPTIONS: handleOptions(),
       GET: () => getRoute(),
       POST: (req) => postRoute(req),
       DELETE: () => deleteAllRoute(),
     },
 
     "/api/todos/:id": {
+      OPTIONS: handleOptions(),
       PATCH: (req) => handleUpdateTodo(req),
       DELETE: (req) => deleteTodoRoute(req),
     }
