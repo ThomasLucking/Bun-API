@@ -1,8 +1,8 @@
-import { Database } from 'bun:sqlite';
+import { Database, } from 'bun:sqlite';
 import type { Todo } from './Schema';
 
-
 export const db = new Database("mydb.sqlite", { create: true });
+type SQLiteValue = string | number | bigint | Uint8Array | boolean | null;
 
 const sql = `create table if not exists todos (
     id integer primary key autoincrement,
@@ -14,6 +14,7 @@ const sql = `create table if not exists todos (
 
 db.run(sql);
 
+const validColumns = ["title", "content", "due_date", "done"];
 
 export const queryTodos = () => db.query('select * from todos').all();
 
@@ -23,39 +24,42 @@ export const insertStmt = db.prepare(`
   returning *
 `);
 
-export const modifyTodo = (id: number, updates: Partial<Todo>) => {
-  const keys = Object.keys(updates) as Array<keyof typeof updates>;
+export const modifyTodo = (id: number, updates: Partial<Todo>): Todo | null => {
+  // get the keys of the object of the database
+  const keys = Object.keys(updates) as Array<keyof Todo>;
 
+  // verify them
+  const isSafe = keys.every(key => validColumns.includes(key));
+  if (!isSafe) {
+    throw new Error("Security Violation: Unauthorized column access");
+  }
   if (keys.length === 0) {
     throw new Error("No fields to update");
   }
-
-  const setClause = keys.map((key) => `${key} = ?`).join(", ");
-  
-  const values = keys.map((key) => {
+  // Data transformation from true or false to 1 or 0
+  const values: SQLiteValue[] = keys.map((key) => {
     const value = updates[key];
     if (typeof value === "boolean") return value ? 1 : 0;
-    return value ?? null;    
+    return (value as SQLiteValue) ?? null;
   });
-  
-  const sql = `UPDATE todos SET ${setClause} WHERE id = ? RETURNING *`;
+  // Query template
+  const setClause = keys.map((key) => `${key} = ?`).join(", ");
+  // setting the new values inside the database using db.transaction for it to be one atomic operation.
+  const transaction = db.transaction((targetId: number, params: SQLiteValue[]): Todo | null => {
+    const sql = `update todos set ${setClause} where id = ? returning *`;
+    return db.prepare(sql).get(...params, targetId) as Todo | null;
+  });
 
-  const stmt = db.prepare(sql);
-  const updatedTodo = stmt.get(...values as any[], id);
-
-  return updatedTodo;
+  return transaction(id, values);
 };
 
-
-
-
-export const findTodoById = (id: number) => 
-  db.prepare("SELECT * FROM todos WHERE id = ?").get(id);
+export const findTodoById = (id: number) =>
+  db.prepare("select * from todos where id = ?").get(id) as Todo | null;
 
 export const deleteTodoById = (id: number) => {
-  const stmt = db.prepare("DELETE FROM todos WHERE id = ?");
-  return stmt.run(id);
-}
+  const result = db.prepare("delete from todos where id = ?").run(id);
+  return result.changes > 0; 
+};
 
 export const insertTodo = (todo: Todo) => {
   return insertStmt.get({
@@ -63,12 +67,5 @@ export const insertTodo = (todo: Todo) => {
     $content: todo.content,
     $due_date: todo.due_date,
     $done: todo.done ? 1 : 0
-  });
+  }) as Todo;
 };
-
-
-const allTodos = db.query("select * from todos").all();
-console.log("All Todos:", allTodos);
-
-
-console.log("Database and table initialized successfully!");
