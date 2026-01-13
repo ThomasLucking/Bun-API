@@ -9,7 +9,6 @@ export const TodosSchema = v.object({
 
 export type Todo = v.InferOutput<typeof TodosSchema>;
 
-
 export const OptionalTodoSchema = v.partial(TodosSchema)
 
 
