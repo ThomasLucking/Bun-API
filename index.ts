@@ -20,7 +20,7 @@ const handleOptions = () => new Response(null, { headers: corsHeaders });
 
 
 const server = Bun.serve({
-  port: 3000,
+  port: 8080,
   routes: {
     "/": new Response(String(index), {
       headers: {
@@ -30,14 +30,14 @@ const server = Bun.serve({
     }),
     
     "/api/todos": {
-      OPTIONS: handleOptions(),
+      OPTIONS: handleOptions,
       GET: () => getRoute(),
       POST: (req) => postRoute(req),
       DELETE: () => deleteAllRoute(),
     },
 
     "/api/todos/:id": {
-      OPTIONS: handleOptions(),
+      OPTIONS: handleOptions,
       PATCH: (req) => handleUpdateTodo(req),
       DELETE: (req) => deleteTodoRoute(req),
     }
